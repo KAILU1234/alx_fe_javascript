@@ -3,6 +3,7 @@ const newQuoteBtn = document.getElementById('newQuote');
 const newQuoteText = document.getElementById('newQuoteText');
 const newQuoteCategory = document.getElementById('newQuoteCategory');
 const importFile = document.getElementById('importFile');
+const exportBtn = document.getElementById('exportBtn');
 
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "The only way to do great work is to love what you do.", category: "Motivation" },
@@ -31,7 +32,7 @@ function addQuote() {
   const category = newQuoteCategory.value.trim();
 
   if (text === "" || category === "") {
-    alert("Please enter both a quote and category!");
+    alert("Please enter both a quote and a category!");
     return;
   }
 
@@ -42,7 +43,7 @@ function addQuote() {
   alert("Quote added successfully!");
 }
 
-// Export quotes to JSON file
+// Export quotes to a JSON file
 function exportToJsonFile() {
   const dataStr = JSON.stringify(quotes, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -73,7 +74,7 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// Load existing quotes and show one at startup
+// Initialize on page load
 window.addEventListener('load', () => {
   const savedQuotes = localStorage.getItem('quotes');
   if (savedQuotes) quotes = JSON.parse(savedQuotes);
@@ -87,4 +88,6 @@ window.addEventListener('load', () => {
   }
 });
 
-document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+// Event listeners
+newQuoteBtn.addEventListener('click', showRandomQuote);
+exportBtn.addEventListener('click', exportToJsonFile);
