@@ -37,11 +37,9 @@
 
     #quoteDisplay {
       margin-top: 20px;
-      display: grid;
-      gap: 15px;
     }
 
-    .quote-card {
+    #quoteText {
       background: white;
       padding: 15px;
       border-left: 5px solid #007bff;
@@ -59,10 +57,9 @@
 
   <div>
     <h3>Add a New Quote</h3>
-    <input type="text" id="quoteInput" placeholder="Enter quote..." />
-    <input type="text" id="authorInput" placeholder="Enter author..." />
-    <input type="text" id="categoryInput" placeholder="Enter category..." />
-    <button onclick="addQuote()">Add Quote</button>
+    <input type="text" id="newQuote" placeholder="Enter a new quote" />
+    <input type="text" id="newCategory" placeholder="Enter category" />
+    <button id="addQuoteBtn">Add Quote</button>
   </div>
 
   <div>
@@ -73,11 +70,13 @@
   </div>
 
   <div style="margin-top: 20px;">
-    <button onclick="exportToJsonFile()">Export Quotes (JSON)</button>
+    <button id="exportBtn">Export Quotes (JSON)</button>
     <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
   </div>
 
-  <div id="quoteDisplay"></div>
+  <div id="quoteDisplay">
+    <div id="quoteText">Your quote will appear here...</div>
+  </div>
 
   <script src="script.js"></script>
 </body>
