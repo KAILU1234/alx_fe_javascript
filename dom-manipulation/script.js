@@ -1,26 +1,24 @@
-// Array to store quotes
-let quotes = [
-  { text: "The best way to predict the future is to invent it.", category: "Motivation" },
-  { text: "Life is what happens when you’re busy making other plans.", category: "Life" },
-  { text: "Simplicity is the ultimate sophistication.", category: "Wisdom" },
-  { text: "In the middle of difficulty lies opportunity.", category: "Inspiration" }
+// ----------------------
+// Quotes Array
+// ----------------------
+let quotes = JSON.parse(localStorage.getItem("quotes")) || [
+  { text: "The best way to predict the future is to invent it.", author: "Alan Kay", category: "Motivation" },
+  { text: "Life is what happens when you’re busy making other plans.", author: "John Lennon", category: "Life" },
+  { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci", category: "Wisdom" },
+  { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein", category: "Inspiration" }
 ];
 
-// Get DOM elements
-const quoteText = document.getElementById("quoteText");
+// ----------------------
+// DOM Elements
+// ----------------------
+const quoteDisplay = document.getElementById("quoteDisplay");
 const categoryFilter = document.getElementById("categoryFilter");
-const newQuoteInput = document.getElementById("newQuote");
-const newCategoryInput = document.getElementById("newCategory");
-const addQuoteBtn = document.getElementById("addQuoteBtn");
-const exportBtn = document.getElementById("exportBtn");
-const importFile = document.getElementById("importFile");
 
 // ----------------------
 // populateCategories()
 // ----------------------
 function populateCategories() {
-  const categories = [...new Set(quotes.map(q => q.category))]; // extract unique categories
-
+  const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
   categories.forEach(cat => {
     const option = document.createElement("option");
@@ -29,13 +27,13 @@ function populateCategories() {
     categoryFilter.appendChild(option);
   });
 
-  // restore last selected category if available
-  const lastCategory = localStorage.getItem("selectedCategory");
-  if (lastCategory) {
-    categoryFilter.value = lastCategory;
+  // Restore the last selected category if available
+  const savedCategory = localStorage.getItem("selectedCategory");
+  if (savedCategory) {
+    categoryFilter.value = savedCategory;
     filterQuote();
   } else {
-    displayRandomQuote();
+    displayQuotes(quotes);
   }
 }
 
@@ -44,38 +42,103 @@ function populateCategories() {
 // ----------------------
 function filterQuote() {
   const selected = categoryFilter.value;
-  localStorage.setItem("selectedCategory", selected); // save selected category
+  localStorage.setItem("selectedCategory", selected);
 
-  let filteredQuotes = quotes;
+  let filtered = quotes;
   if (selected !== "all") {
-    filteredQuotes = quotes.filter(q => q.category === selected);
+    filtered = quotes.filter(q => q.category === selected);
   }
 
-  if (filteredQuotes.length > 0) {
-    const random = Math.floor(Math.random() * filteredQuotes.length);
-    quoteText.textContent = filteredQuotes[random].text;
-  } else {
-    quoteText.textContent = "No quotes found for this category.";
-  }
+  displayQuotes(filtered);
 }
 
 // ----------------------
-// displayRandomQuote()
+// Display Quotes
 // ----------------------
-function displayRandomQuote() {
-  const random = Math.floor(Math.random() * quotes.length);
-  quoteText.textContent = quotes[random].text;
+function displayQuotes(list) {
+  quoteDisplay.innerHTML = "";
+  if (list.length === 0) {
+    quoteDisplay.innerHTML = "<p>No quotes found for this category.</p>";
+    return;
+  }
+
+  list.forEach(q => {
+    const div = document.createElement("div");
+    div.className = "quote-card";
+    div.innerHTML = `<p>"${q.text}"</p><small>- ${q.author} (${q.category})</small>`;
+    quoteDisplay.appendChild(div);
+  });
 }
 
 // ----------------------
-// Add new quote
+// Add New Quote
 // ----------------------
-addQuoteBtn.addEventListener("click", () => {
-  const quote = newQuoteInput.value.trim();
-  const category = newCategoryInput.value.trim();
+function addQuote() {
+  const quoteInput = document.getElementById("quoteInput");
+  const authorInput = document.getElementById("authorInput");
+  const categoryInput = document.getElementById("categoryInput");
 
-  if (!quote || !category) return alert("Please fill both fields!");
+  const text = quoteInput.value.trim();
+  const author = authorInput.value.trim();
+  const category = categoryInput.value.trim();
 
-  quotes.push({ text: quote, category });
-  newQuoteInput.value = "";
-  newCategoryInput.value =
+  if (!text || !author || !category) {
+    alert("Please fill in all fields!");
+    return;
+  }
+
+  quotes.push({ text, author, category });
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+
+  quoteInput.value = "";
+  authorInput.value = "";
+  categoryInput.value = "";
+
+  populateCategories();
+  filterQuote();
+}
+
+// ----------------------
+// Export Quotes
+// ----------------------
+function exportToJsonFile() {
+  const data = JSON.stringify(quotes, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ----------------------
+// Import Quotes
+// ----------------------
+function importFromJsonFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+      if (Array.isArray(importedQuotes)) {
+        quotes = importedQuotes;
+        localStorage.setItem("quotes", JSON.stringify(quotes));
+        populateCategories();
+        filterQuote();
+      } else {
+        alert("Invalid file format.");
+      }
+    } catch {
+      alert("Error reading file.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ----------------------
+// Initialize on page load
+// ----------------------
+window.addEventListener("load", populateCategories);
