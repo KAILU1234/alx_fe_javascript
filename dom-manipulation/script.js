@@ -1,17 +1,29 @@
-// -----------------------------
-// Load quotes from localStorage
-// -----------------------------
+// Load existing quotes or default
 let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "The best way to predict the future is to invent it.", author: "Alan Kay", category: "Motivation" },
   { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci", category: "Wisdom" },
   { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein", category: "Inspiration" }
 ];
 
-// -----------------------------
-// Display quotes container
-// -----------------------------
+// DOM elements
 const quoteDisplay = document.getElementById("quoteDisplay");
 const categoryFilter = document.getElementById("categoryFilter");
+
+// -----------------------------
+// Display a random quote
+// -----------------------------
+function displayRandomQuote() {
+  if (quotes.length === 0) return;
+  const randomIndex = Math.floor(Math.random() * quotes.length); // Math.random required
+  const randomQuote = quotes[randomIndex];
+  quoteDisplay.innerHTML = `
+    <div class="quote-card">
+      <p>"${randomQuote.text}"</p>
+      <small>- ${randomQuote.author} (${randomQuote.category})</small>
+    </div>
+  `;
+  sessionStorage.setItem("lastViewedQuote", JSON.stringify(randomQuote));
+}
 
 // -----------------------------
 // populateCategories()
@@ -27,13 +39,13 @@ function populateCategories() {
     categoryFilter.appendChild(option);
   });
 
-  // Restore last selected category if saved
+  // Restore saved category if exists
   const savedCategory = localStorage.getItem("selectedCategory");
   if (savedCategory) {
     categoryFilter.value = savedCategory;
     filterQuote();
   } else {
-    displayQuotes(quotes);
+    displayRandomQuote();
   }
 }
 
@@ -44,30 +56,29 @@ function filterQuote() {
   const selected = categoryFilter.value;
   localStorage.setItem("selectedCategory", selected);
 
-  let filteredQuotes = quotes;
-  if (selected !== "all") {
-    filteredQuotes = quotes.filter(q => q.category === selected);
-  }
-
-  displayQuotes(filteredQuotes);
-}
-
-// -----------------------------
-// displayQuotes()
-// -----------------------------
-function displayQuotes(list) {
-  quoteDisplay.innerHTML = "";
-  if (list.length === 0) {
-    quoteDisplay.innerHTML = "<p>No quotes found for this category.</p>";
+  if (selected === "all") {
+    displayRandomQuote();
     return;
   }
 
-  list.forEach(q => {
-    const div = document.createElement("div");
-    div.className = "quote-card";
-    div.innerHTML = `<p>"${q.text}"</p><small>- ${q.author} (${q.category})</small>`;
-    quoteDisplay.appendChild(div);
-  });
+  const filteredQuotes = quotes.filter(q => q.category === selected);
+
+  if (filteredQuotes.length === 0) {
+    quoteDisplay.innerHTML = `<p>No quotes found for ${selected}.</p>`;
+    return;
+  }
+
+  // Show one random quote from filtered list
+  const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+  const randomQuote = filteredQuotes[randomIndex];
+
+  quoteDisplay.innerHTML = `
+    <div class="quote-card">
+      <p>"${randomQuote.text}"</p>
+      <small>- ${randomQuote.author} (${randomQuote.category})</small>
+    </div>
+  `;
+  sessionStorage.setItem("lastViewedQuote", JSON.stringify(randomQuote));
 }
 
 // -----------------------------
@@ -97,4 +108,18 @@ function addQuote() {
 // -----------------------------
 // Initialize when page loads
 // -----------------------------
-window.addEventListener("load", populateCategories);
+window.addEventListener("load", () => {
+  populateCategories();
+  const lastViewed = sessionStorage.getItem("lastViewedQuote");
+  if (lastViewed) {
+    const q = JSON.parse(lastViewed);
+    quoteDisplay.innerHTML = `
+      <div class="quote-card">
+        <p>"${q.text}"</p>
+        <small>- ${q.author} (${q.category})</small>
+      </div>
+    `;
+  } else {
+    displayRandomQuote();
+  }
+});
