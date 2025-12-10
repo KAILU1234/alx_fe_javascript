@@ -40,3 +40,24 @@ function addQuote() {
 
 // Button event listener
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+function createAddQuoteForm() {
+  const container = document.createElement("div");
+
+  const textInput = document.createElement("input");
+  textInput.id = "newQuoteText";
+  textInput.placeholder = "Enter a new quote";
+
+  const categoryInput = document.createElement("input");
+  categoryInput.id = "newQuoteCategory";
+  categoryInput.placeholder = "Enter quote category";
+
+  const addButton = document.createElement("button");
+  addButton.textContent = "Add Quote";
+  addButton.onclick = addQuote;
+
+  container.appendChild(textInput);
+  container.appendChild(categoryInput);
+  container.appendChild(addButton);
+
+  document.body.appendChild(container);
+}
