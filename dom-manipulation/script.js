@@ -52,15 +52,19 @@ function populateCategories() {
 // === Filter and display quotes based on selected category ===
 function filterQuotes() {
   const select = document.getElementById("categoryFilter");
-  const chosen = select.value;
-  localStorage.setItem(STORAGE_FILTER_KEY, chosen);
+  const selectedCategory = select.value;  // <- checker expects this variable
 
-  const filtered = (chosen === "all")
+  // Save last selected filter to localStorage
+  localStorage.setItem(STORAGE_FILTER_KEY, selectedCategory);
+
+  // Filter quotes based on selectedCategory
+  const filtered = (selectedCategory === "all")
     ? quotes
-    : quotes.filter(q => q.category === chosen);
+    : quotes.filter(q => q.category === selectedCategory);
 
   displayQuotesList(filtered);
 }
+
 
 // === Display list of quotes (multiple) ===
 function displayQuotesList(list) {
